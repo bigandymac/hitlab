@@ -1,0 +1,36 @@
+# Node / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+*.iml
+
+# Local database & temp data
+hitlab.db*
+*.db.json
+tmp/
+static/*.pdf
+
+# Logs
+logs/
+*.log
+log.txt
+
+# Backup files
+*~
+*.bak
+*.tmp
