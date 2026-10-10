@@ -4,8 +4,10 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "cross-env NODE_ENV=development node server.js"
+    "start": "node start-actions.js",
+    "dev": "cross-env NODE_ENV=development node start-actions.js",
+    "test": "node --test tests/*.test.js",
+    "actions:schema": "node scripts/write-openapi.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
