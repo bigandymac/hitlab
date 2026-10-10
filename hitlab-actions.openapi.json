@@ -1,0 +1,743 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HitLab private pilot Actions",
+    "version": "1.1.0",
+    "description": "Save and reopen immutable music project snapshots and export GPT-drafted reports. Single owner private pilot; this API does not analyse audio or generate music."
+  },
+  "servers": [
+    {
+      "url": "https://hitlab-api.example.invalid"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "checkHitLabHealth",
+        "summary": "Check whether the HitLab API is running",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "service": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "service",
+                    "version"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects": {
+      "post": {
+        "operationId": "saveHitLabProject",
+        "summary": "Save a new immutable snapshot after the artist asks to save",
+        "x-openai-isConsequential": true,
+        "description": "A successful response creates a new project ID. No previous snapshot is overwritten. Retain the original lyrics and only include approvedLyrics if the artist accepted that text. Each project data field is text; total data at most 32000 characters. Saving stores the content on the HitLab server.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Project name",
+                    "maxLength": 160,
+                    "minLength": 1
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "instructionVersion": {
+                        "type": "string",
+                        "description": "Instruction configuration version, e.g. HitLab-1.1",
+                        "maxLength": 80
+                      },
+                      "brief": {
+                        "type": "string",
+                        "description": "Genre, intended listener and task",
+                        "maxLength": 8000
+                      },
+                      "originalLyrics": {
+                        "type": "string",
+                        "description": "Artist supplied original lyrics; preserve verbatim",
+                        "maxLength": 8000
+                      },
+                      "revisedLyrics": {
+                        "type": "string",
+                        "description": "Proposed revision, labelled as a draft",
+                        "maxLength": 8000
+                      },
+                      "approvedLyrics": {
+                        "type": "string",
+                        "description": "Only text the artist explicitly accepted",
+                        "maxLength": 8000
+                      },
+                      "constraints": {
+                        "type": "string",
+                        "description": "Locked lines, facts, point of view and artist identity",
+                        "maxLength": 8000
+                      },
+                      "diagnosis": {
+                        "type": "string",
+                        "description": "Single primary issue and evidence",
+                        "maxLength": 8000
+                      },
+                      "editNotes": {
+                        "type": "string",
+                        "description": "Original-to-proposed changes with reasons",
+                        "maxLength": 8000
+                      },
+                      "decisions": {
+                        "type": "string",
+                        "description": "Artist accept/reject decisions and feedback",
+                        "maxLength": 8000
+                      },
+                      "sunoPrompt": {
+                        "type": "string",
+                        "description": "Style prompt and lyrics handoff with uncertainty labels",
+                        "maxLength": 8000
+                      }
+                    },
+                    "required": [
+                      "instructionVersion"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "title",
+                  "data"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Snapshot saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "projectId": {
+                      "type": "string"
+                    },
+                    "savedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "projectId",
+                    "savedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}": {
+      "get": {
+        "operationId": "openHitLabProject",
+        "summary": "Reopen a saved project using its exact returned ID",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^proj_[0-9a-f-]{36}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "project": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string",
+                          "description": "Project title",
+                          "maxLength": 160
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "instructionVersion": {
+                              "type": "string",
+                              "description": "Instruction configuration version, e.g. HitLab-1.1",
+                              "maxLength": 80
+                            },
+                            "brief": {
+                              "type": "string",
+                              "description": "Genre, intended listener and task",
+                              "maxLength": 8000
+                            },
+                            "originalLyrics": {
+                              "type": "string",
+                              "description": "Artist supplied original lyrics; preserve verbatim",
+                              "maxLength": 8000
+                            },
+                            "revisedLyrics": {
+                              "type": "string",
+                              "description": "Proposed revision, labelled as a draft",
+                              "maxLength": 8000
+                            },
+                            "approvedLyrics": {
+                              "type": "string",
+                              "description": "Only text the artist explicitly accepted",
+                              "maxLength": 8000
+                            },
+                            "constraints": {
+                              "type": "string",
+                              "description": "Locked lines, facts, point of view and artist identity",
+                              "maxLength": 8000
+                            },
+                            "diagnosis": {
+                              "type": "string",
+                              "description": "Single primary issue and evidence",
+                              "maxLength": 8000
+                            },
+                            "editNotes": {
+                              "type": "string",
+                              "description": "Original-to-proposed changes with reasons",
+                              "maxLength": 8000
+                            },
+                            "decisions": {
+                              "type": "string",
+                              "description": "Artist accept/reject decisions and feedback",
+                              "maxLength": 8000
+                            },
+                            "sunoPrompt": {
+                              "type": "string",
+                              "description": "Style prompt and lyrics handoff with uncertainty labels",
+                              "maxLength": 8000
+                            }
+                          },
+                          "required": [
+                            "instructionVersion"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "savedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "data",
+                        "savedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "project"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/export": {
+      "post": {
+        "operationId": "exportHitLabReport",
+        "summary": "Export an artist-requested draft or approved report as a PDF",
+        "x-openai-isConsequential": true,
+        "description": "Use content already shown to the artist. The API formats supplied text; it does not perform an AI review. Returned download link works for 15 minutes; anyone holding it can read the PDF. Total request content at most 32000 characters.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Report title",
+                    "maxLength": 160,
+                    "minLength": 1
+                  },
+                  "sections": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 12,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "heading": {
+                          "type": "string",
+                          "description": "Section heading",
+                          "maxLength": 160,
+                          "minLength": 1
+                        },
+                        "body": {
+                          "type": "string",
+                          "description": "Section text",
+                          "maxLength": 8000,
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "heading",
+                        "body"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "title",
+                  "sections"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Temporary PDF download",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "pdfUrl": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "pdfUrl",
+                    "expiresAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request rejected or failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
